@@ -1,49 +1,30 @@
-const fs = require('fs');
-const path = require('path');
+const Sequelise = require('sequelize');
 
+const sequelize = require('../utils/database');
 
-
-const rootDir = require('../utils/path');
-const p = path.join(rootDir, 'data' , 'products.json');
-
-const getProductsFromFile = cb => {
-  fs.readFile(p, (err, fileContent) => {
-    if (err) {
-      cb([]);
-    } else {
-      cb(JSON.parse(fileContent));
+const Product = sequelize.define('product', {
+    id: {
+        type: Sequelise.INTEGER,
+        autoIncrement: true,
+        allowNull: false,
+        primaryKey: true
+    },
+    title: {
+        type: Sequelise.STRING,
+        allowNull: false,
+    },
+    price: {
+        type: Sequelise.DOUBLE,
+        allowNull: false
+    },
+    imageUrl: {
+        type: Sequelise.STRING,
+        allowNull: false
+    },
+    description: {
+        type: Sequelise.STRING,
+        allowNull: false
     }
-  });
-};
+});
 
-module.exports = class Product {
-  constructor(title, imageUrl, description, price) {
-    this.title = title;
-    this.imageUrl = imageUrl;
-    this.description = description;
-    this.price = price;
-  }
-
-  save() {
-    this.id = Math.random().toString();
-    getProductsFromFile(products => {
-      products.push(this);
-      fs.writeFile(p, JSON.stringify(products), err => {
-        console.log(err);
-      });
-    });
-  }
-
-  static fetchAll(cb) {
-    getProductsFromFile(cb);
-  }
-
-  static findById(id, cb) {
-    getProductsFromFile(products => {
-      const product = products.find(prod => prod.id === id);
-      // console.log('FIND BY ID',product);
-      cb(product);
-    });
-  }
-
-};
+module.exports = Product;

@@ -1,6 +1,44 @@
 <%- include('../includes/head.ejs') %>
-    </head>
+<link rel="stylesheet" href="/css/product.css">
+</head>
 
-    <body>
-        <%- include('../includes/navigation.ejs') %>
-        <%- include('../includes/end.ejs') %>
+<body>
+<%- include('../includes/navigation.ejs') %>
+
+<main>
+    <% if (products.length > 0) { %>
+        <div class="grid">
+            <% for (let product of products) { %>
+                <article class="card product-item">
+                    <header class="card__header">
+                        <h1 class="product__title">
+                            <%= product.product.title %>
+                            (<%= product.qty %>)
+                        </h1>
+                    </header>
+                    <div class="card__image">
+                        <img src="<%= product.product.imageUrl %>" alt="<%= product.product.title %>">
+                    </div>
+                    <div class="card__content">
+                        <h2 class="product__price">$
+                            <%= product.product.price %>
+                        </h2>
+                        <p class="product__description">
+                            <%= product.product.description %>
+                        </p>
+                    </div>
+                    <div class="card__actions">
+                        <a class="btn" href="/products/<%=product.product.id%>">Details</a>
+                        <form action="/cart/delete-item" method="POST">
+                            <input type="hidden" name="productId" value="<%=product.product.id%>">
+                            <button type="submit" class="btn btn-del">Delete Item</button>
+                        </form>
+                    </div>
+                </article>
+            <% } %>
+        </div>
+    <% } else { %>
+        <h1>No Products Found!</h1>
+    <% } %>
+</main>
+<%- include('../includes/end.ejs') %>
