@@ -33,4 +33,4 @@ sequelize.sync()
 })
 .catch(err => {
     throw err;
-})
+});
