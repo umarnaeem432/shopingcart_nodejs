@@ -12,25 +12,25 @@
                 <article class="card product-item">
                     <header class="card__header">
                         <h1 class="product__title">
-                            <%= product.product.title %>
-                            (<%= product.qty %>)
+                            <%= product.title %>
+                            (<%= product.cartItem.qty %>)
                         </h1>
                     </header>
                     <div class="card__image">
-                        <img src="<%= product.product.imageUrl %>" alt="<%= product.product.title %>">
+                        <img src="<%= product.imageUrl %>" alt="<%= product.title %>">
                     </div>
                     <div class="card__content">
                         <h2 class="product__price">$
-                            <%= product.product.price %>
+                            <%= product.price %>
                         </h2>
                         <p class="product__description">
-                            <%= product.product.description %>
+                            <%= product.description %>
                         </p>
                     </div>
                     <div class="card__actions">
-                        <a class="btn" href="/products/<%=product.product.id%>">Details</a>
+                        <a class="btn" href="/products/<%=product.id%>">Details</a>
                         <form action="/cart/delete-item" method="POST">
-                            <input type="hidden" name="productId" value="<%=product.product.id%>">
+                            <input type="hidden" name="productId" value="<%=product.id%>">
                             <button type="submit" class="btn btn-del">Delete Item</button>
                         </form>
                     </div>
@@ -38,7 +38,7 @@
             <% } %>
         </div>
     <% } else { %>
-        <h1>No Products Found!</h1>
+        <h1>No Product In the Cart!</h1>
     <% } %>
 </main>
 <%- include('../includes/end.ejs') %>
