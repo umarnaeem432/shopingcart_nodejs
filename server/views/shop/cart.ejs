@@ -36,6 +36,10 @@
                     </div>
                 </article>
             <% } %>
+
+                <form action="/create-order" method="POST">
+                    <button type="submit" class="btn">Order Now</button>
+                </form>
         </div>
     <% } else { %>
         <h1>No Product In the Cart!</h1>
