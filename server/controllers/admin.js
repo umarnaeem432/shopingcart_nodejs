@@ -1,4 +1,6 @@
+const ObjectID = require('mongodb').ObjectID;
 const Product = require('../models/product');
+
 
 exports.getAddProduct = (req, res, next) => {
   res.render('admin/edit-product', {
@@ -15,7 +17,7 @@ exports.getEditProduct = (req, res, next) => {
   }
 
   const productId = req.params.productId;
-  Product.findOne({where: {id: productId}})
+  Product.getProductById(productId)
       .then((product) => {
         // console.log(result);
           res.render('admin/edit-product', {
@@ -28,8 +30,6 @@ exports.getEditProduct = (req, res, next) => {
       .catch(err => {
         throw err;
       });
-  // console.log(product);
-
 };
 
 exports.postEditProduct = (req, res, next) => {
@@ -39,23 +39,19 @@ exports.postEditProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
 
-  Product.update(
-      {
-          title: title,
-          price: price,
-          description: description,
-          imageUrl: imageUrl
-      },
-      {
-          where: {
-              id: productId
-          }
-      }
-  ).then(result => {
-      res.redirect('/admin/products');
-  }).catch(err => {
-      throw err;
-  })
+  const updatedProduct = new Product(title, price, imageUrl, description, productId, req.user._id);
+
+  updatedProduct.updateProduct()
+      .then(() => {
+          return req.user.updateCartItem(updatedProduct);
+      })
+      .then(() => {
+          res.redirect('/admin/products?prod_updt=true');
+      })
+      .catch(err => {
+          throw err;
+      })
+
 };
 
 exports.postAddProduct = (req, res, next) => {
@@ -63,24 +59,23 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  req.user.createProduct({
-      title: title,
-      imageUrl: imageUrl,
-      price: price,
-      description: description
-  })
-  .then(() => {
-      res.redirect('/admin/add-product?success=true');
-  })
-  .catch(err => {
-      throw err;
-  });
+
+  const product = new Product(title, price, imageUrl, description, null ,req.user._id);
+
+  product.save()
+      .then(() => {
+          res.redirect('/admin/add-product?prod_added=true');
+      })
+      .catch(err => {
+          throw err;
+      });
 };
 
 exports.postDeleteProduct = (req, res, next) => {
   const productId = req.body.productId;
-  Product.destroy({where: {id: productId}})
+  Product.deleteProduct(productId)
       .then(() => {
+          req.user.removeFromCart(productId);
           res.redirect('/admin/products');
       })
       .catch(err => {
@@ -89,7 +84,7 @@ exports.postDeleteProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  req.user.getProducts()
+  Product.fetchAll()
       .then(products => {
           res.render('admin/products', {
               prods: products,
