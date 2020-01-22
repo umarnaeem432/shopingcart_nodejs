@@ -2,10 +2,10 @@ const path = require('path');
 
 const express = require('express');
 const bodyParser = require('body-parser');
-
+const mongoose = require('mongoose');
 const errorController = require('./controllers/error');
 const rootDir = require('./utils/path');
-const mongoConnect = require('./utils/database').mongoConnect;
+
 const User = require('./models/user');
 
 const app = express();
@@ -18,15 +18,38 @@ app.set('views', path.join(rootDir, 'views'));
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+    extended: false
+}));
 
-app.use(express.static(path.join(rootDir , 'public')));
+app.use(express.static(path.join(rootDir, 'public')));
 
 app.use((req, res, next) => {
-    User.getUserById('5e1b0c8cfdae022b9498affb')
+    User.find
+    User.findById('5e27bdca7661a3285fa350c5')
+    .populate('cart.items.productId')
         .then(user => {
-            req.user = new User(user.name, user.email, user.cart, user._id);
-            next();
+            if (!user) {
+                // Create One.
+                const newUser = new User({
+                    username: 'umarnaeem432',
+                    email: 'umarnaeem432@retail.com',
+                    cart: {
+                        items: []
+                    }
+                });
+                User.create(newUser)
+                    .then(() => {
+                        req.user = newUser;
+                        next();
+                    })
+                    .catch(err => {
+                        throw err;
+                    })
+            } else {
+                req.user = user;
+                next();
+            }
         })
         .catch(err => {
             throw err;
@@ -38,7 +61,12 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-mongoConnect(() => {
-    app.listen(port);
-});
+// Connect to the database and once its connected then start the server.
 
+mongoose.connect('mongodb+srv://umarnaeem432:gct165201b@cluster0-evjwn.mongodb.net/shop?retryWrites=true&w=majority')
+    .then(() => {
+        app.listen(port);
+    })
+    .catch(err => {
+        throw err;
+    })
