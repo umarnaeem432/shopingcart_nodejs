@@ -29,7 +29,6 @@
                     </p>
                 </div>
                 <div class="card__actions">
-                    <%=product.productId._id%>
                     <a class="btn" href="/products/<%=product.productId._id%>">Details</a>
                     <form action="/cart/delete-item" method="POST">
                         <input type="hidden" name="productId" value="<%=product.productId._id%>">

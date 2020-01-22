@@ -58,7 +58,6 @@ exports.postCart = (req, res, next) => {
     const existingProduct = req.user.cart.items[existingProductIndex];
 
     if (existingProduct) {
-        console.log(existingProduct);
         req.user.cart.items[existingProductIndex].qty += 1;
         req.user.save()
             .then(() => {
