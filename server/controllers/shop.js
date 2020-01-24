@@ -1,4 +1,5 @@
 const Product = require('../models/product');
+const User = require('../models/user');
 
 exports.getProducts = (req, res, next) => {
     Product.find()
@@ -44,57 +45,80 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getCart = (req, res, next) => {
-    res.render('shop/cart', {
-        path: '/cart',
-        pageTitle: 'Your Cart',
-        products: req.user.cart.items
-    });
+
+    User.findById(req.user._id).select('cart')
+    .populate('cart.items.productId')
+    .then(cartWithUserId => {
+        const cartProducts = cartWithUserId.cart.items.map(item => {
+            return {
+                ...
+                item.productId._doc,
+                qty: item.qty
+            };
+        });
+
+        res.render('shop/cart', {
+            path: '/cart',
+            pageTitle: 'Your Cart',
+            products: cartProducts
+        });
+    })
+    .catch(err => {
+        throw err;
+    })
+    // res.render('shop/cart', {
+    //     path: '/cart',
+    //     pageTitle: 'Your Cart',
+    //     products: req.user.cart.items
+    // });
 };
 
 exports.postCart = (req, res, next) => {
     const productId = req.body.productId;
 
-    const existingProductIndex = req.user.cart.items.findIndex(prod => prod.productId._id.toString() === productId.toString());
+    const existingProductIndex = req.user.cart.items.findIndex(cartProd => cartProd.productId.toString() === productId.toString());
     const existingProduct = req.user.cart.items[existingProductIndex];
-
-    if (existingProduct) {
-        req.user.cart.items[existingProductIndex].qty += 1;
+    if(existingProduct) {
+        existingProduct.qty += 1;
+        req.user.cart.items[existingProductIndex] = existingProduct;
         req.user.save()
-            .then(() => {
-                res.redirect('/products?atoc=true');
-            })
-            .catch(err => {
-                throw err;
-            })
+        .then(() => {
+            res.redirect('/products'); // redirect to the products page.
+        })
+        .catch(err => {
+            throw err;
+        }) 
     } else {
-        const newProduct = {
+        const newCartProduct = {
             productId: productId,
             qty: 1
         };
-        req.user.cart.items.push(newProduct);
+
+        req.user.cart.items.push(newCartProduct);
         req.user.save()
-            .then(() => {
-                res.redirect('/products?atoc=true');
-            })
-            .catch(err => {
-                throw err;
-            })
+        .then(() => {
+            res.redirect('/products'); // redirect to products page.
+        })
+        .catch(err => {
+            throw err;
+        })
     }
 };
 
 exports.deleteProductFromCart = (req, res, next) => {
     const productId = req.body.productId;
 
-    const newItemsForCart = req.user.cart.items.filter(prod => prod.productId._id.toString() !== productId.toString());
-    req.user.cart.items = newItemsForCart;
+    const updatedCartItems = req.user.cart.items.filter(cartProd => cartProd.productId.toString() !== productId.toString());
+
+    req.user.cart.items = updatedCartItems;
 
     req.user.save()
-        .then(() => {
-            res.redirect('/cart');
-        })
-        .catch(err => {
-            throw err;
-        })
+    .then(() => {
+        res.redirect('/cart?del=true');
+    })
+    .catch(err => {
+        throw err;
+    })
 };
 
 exports.postOrder = (req, res, next) => {

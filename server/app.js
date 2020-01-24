@@ -25,9 +25,7 @@ app.use(bodyParser.urlencoded({
 app.use(express.static(path.join(rootDir, 'public')));
 
 app.use((req, res, next) => {
-    User.find
     User.findById('5e27bdca7661a3285fa350c5')
-    .populate('cart.items.productId')
         .then(user => {
             if (!user) {
                 // Create One.
@@ -45,7 +43,7 @@ app.use((req, res, next) => {
                     })
                     .catch(err => {
                         throw err;
-                    })
+                    });
             } else {
                 req.user = user;
                 next();
@@ -64,9 +62,9 @@ app.use(errorController.get404);
 // Connect to the database and once its connected then start the server.
 
 mongoose.connect('mongodb+srv://umarnaeem432:gct165201b@cluster0-evjwn.mongodb.net/shop?retryWrites=true&w=majority')
-    .then(() => {
-        app.listen(port);
-    })
-    .catch(err => {
-        throw err;
-    })
+.then(() => {
+    app.listen(port);
+})
+.catch(err => {
+    throw err;
+})

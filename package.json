@@ -4,9 +4,9 @@
   "description": "A Node JS Course Project",
   "main": "./server/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./server/app.js",
-    "run": "nodemon ./server/app.js"
+    "run": "nodemon ./server/app.js",
+    "rwf": "forever ./server/app.js"
   },
   "keywords": [],
   "author": "M.Umar",
